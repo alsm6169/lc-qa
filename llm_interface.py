@@ -1,3 +1,7 @@
+"""
+This script provides functions for generating summaries and answering questions
+from PDF documents using OpenAI's language model.
+"""
 import inspect
 import tiktoken
 from langchain import OpenAI, PromptTemplate, LLMChain
@@ -9,6 +13,16 @@ from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 
 
 def get_est_cost(model_name, split_docs):
+    """
+    Calculates the estimated cost of embedding the given split documents using the specified OpenAI language model.
+   Args:
+     model_name (str): The name of the OpenAI language model to use.
+     split_docs (list of str): A list of strings representing the split documents.
+   Returns:
+     total_word_count (int): The total word count of the split documents.
+     total_token_count (int): The total token count of the split documents.
+     est_cost (float): The estimated cost of embedding the split documents using the specified OpenAI language model.
+    """
     # the latest prices are here: https://openai.com/pricing#language-models
     price_map = {'gpt-4': 0.03, 'gpt-3.5-turbo': 0.002}
     model_price = price_map[model_name]
@@ -25,6 +39,13 @@ def get_est_cost(model_name, split_docs):
 
 
 def get_doc_pages(doc_path_name):
+    """
+   Loads a PDF document and returns an array of documents, where each document contains the page content and metadata with page number.
+   Args:
+     doc_path_name (str): The path and name of the PDF document to load.
+   Returns:
+     pages (list of objects): A list of objects representing the pages of the PDF document.
+    """
     # Load PDF using pypdf into array of documents,
     # where each document contains the page content and metadata with page number.
     # An advantage of this approach is that documents can be retrieved with page numbers.
@@ -36,6 +57,15 @@ def get_doc_pages(doc_path_name):
 
 
 def get_summary_wo_prompt(llm, pages, chain_type):
+    """
+    Generates a summary of the given pages using the specified language model and summarization chain.
+   Args:
+     llm (OpenAI): The OpenAI language model to use for summarization.
+     pages (list of objects): A list of objects representing the pages to summarize.
+     chain_type (str): The type of summarization chain to use.
+   Returns:
+     summary_wo_prompt (str): The generated summary without a prompt.
+    """
     chain_obj = load_summarize_chain(llm, chain_type=chain_type)
     # print(chain_obj.llm_chain.prompt.template)
     # print(chain_obj.combine_document_chain.llm_chain.prompt.template)
@@ -44,6 +74,15 @@ def get_summary_wo_prompt(llm, pages, chain_type):
 
 
 def get_summary_with_prompt(llm, pages, chain_type):
+    """
+       Generates a summary of the given pages using the specified language model and summarization chain with a prompt.
+   Args:
+     llm (OpenAI): The OpenAI language model to use for summarization.
+     pages (list of objects): A list of objects representing the pages to summarize.
+     chain_type (str): The type of summarization chain to use.
+   Returns:
+     summary_with_prompt (str): The generated summary with a prompt.
+    """
     prompt_template = """Write a concise summary of the following:
 
     {text}
@@ -59,6 +98,15 @@ def get_summary_with_prompt(llm, pages, chain_type):
 
 
 def get_summary(doc_path_name, model_name='gpt-3.5-turbo', chain_type='map_reduce'):
+    """
+    Generates a summary of the PDF document at the specified path and name using the specified language model and summarization chain.
+   Args:
+     doc_path_name (str): The path and name of the PDF document to summarize.
+     model_name (str): The name of the OpenAI language model to use for summarization. Defaults to 'gpt-3.5-turbo'.
+     chain_type (str): The type of summarization chain to use. Defaults to 'map_reduce'.
+   Returns:
+     summary_wo_prompt (str): The generated summary without a prompt.
+    """
     pages = get_doc_pages(doc_path_name)
     # return pages[1].page_content
     llm = OpenAI(temperature=0)
@@ -74,6 +122,17 @@ def get_summary(doc_path_name, model_name='gpt-3.5-turbo', chain_type='map_reduc
 
 
 def answer_the_question(doc_path_name, question, model_name='gpt-3.5-turbo', chain_type='map_reduce', num_matches=3):
+    """
+    Generates an answer to the given question from the PDF document at the specified path and name using the specified language model and summarization chain.
+   Args:
+     doc_path_name (str): The path and name of the PDF document to search for an answer.
+     question (str): The question to answer.
+     model_name (str): The name of the OpenAI language model to use for summarization. Defaults to 'gpt-3.5-turbo'.
+     chain_type (str): The type of summarization chain to use. Defaults to 'map_reduce'.
+     num_matches (int): The number of most relevant documents to search for an answer. Defaults to 3.
+   Returns:
+     answer (str): The generated answer to the
+    """
     chunk_size_limit = 1000
     max_chunk_overlap = 50
     embeddings_dir = './'

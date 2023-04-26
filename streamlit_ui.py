@@ -1,8 +1,22 @@
+"""
+This script provides a Streamlit app that allows the user to upload files and
+ask questions about the contents of those files. The app uses the llm_interface module
+to process uploaded files and generate responses to user questions.
+"""
 import streamlit as st
 import os
 
 from llm_interface import get_summary, answer_the_question
 
+"""
+Global Variables:
+- qa_history: a list that stores the question-answer history.
+- q_input_box: a string that represents the current question input box value.
+- current_question: a string that represents the current user question.
+- files_2_upload: a list that stores information about the files that have been uploaded.
+- uploaded_files: a list that stores the paths to uploaded files.
+- disabled: a boolean that indicates whether or not the file upload button is disabled.
+"""
 # Create an empty list to store the question-answer history
 if 'qa_history' not in st.session_state:
     st.session_state.qa_history = []
@@ -24,6 +38,14 @@ if 'disabled' not in st.session_state:
 
 
 def write_files_info(out_col):
+    """
+    Display information about uploaded files in the left column of the Streamlit app.
+
+    Args:
+        out_col: Streamlit column object representing the left column of the app.
+    Returns:
+        None
+    """
     # print('inside write_files_info')
     for i in range(len(st.session_state.files_2_upload)):
         out_col.write('File - ' + st.session_state.files_2_upload[i]['Name'])
@@ -35,6 +57,15 @@ def write_files_info(out_col):
 
 # Create a function to handle user input and server replies
 def handle_question(question):
+    """
+        Generate a response to the user's question using the uploaded file, and save the question-answer
+        pair to the session history.
+
+        Args:
+            question: string representing the user's question.
+        Returns:
+            string representing the server's response to the question.
+    """
     # print('inside handle_question: ', question)
     # generate a response
     file = st.session_state.uploaded_files[0]
@@ -49,6 +80,15 @@ def handle_question(question):
 
 
 def save_files_get_summary():
+    """
+    Save uploaded files to disk, generate a summary for each file, and store information about
+    each file in the session state.
+
+    Args:
+        None
+    Returns:
+        bool: True if files were uploaded and processed, False otherwise.
+    """
     print('inside save_files_get_summary: ', st.session_state.file_upload_widget)
     doc_dir = 'documents'
     if len(st.session_state.file_upload_widget) > 0:
@@ -71,13 +111,30 @@ def save_files_get_summary():
 
 
 def clear_text_box():
+    """
+    Clear the user's question from the input box and save it to the session state.
+
+    Args:
+        None
+    Returns:
+        None
+    """
     st.session_state.current_question = st.session_state.q_input_box
     st.session_state.q_input_box = ''
 
 
 # Set up the Streamlit app
 def main():
+    """
+    Set up the Streamlit app with two columns: one for displaying file information and one for
+    accepting user input and displaying the server's response. Allow users to upload files, ask
+    questions, and view the session history.
 
+    Args:
+        None
+    Returns:
+        None
+    """
     # sidebar creation and handling
     st.sidebar.title('File Upload and Processing')
     with st.sidebar.form(key='sidebar_form'):
